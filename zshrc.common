@@ -1,0 +1,127 @@
+# Plugins
+# https://zdharma-continuum.github.io/zinit/wiki/Example-Minimal-Setup/
+zinit wait lucid light-mode for \
+  atinit"zicompinit; zicdreplay" \
+      zdharma-continuum/fast-syntax-highlighting \
+  atload"_zsh_autosuggest_start" \
+      zsh-users/zsh-autosuggestions \
+  blockf atpull'zinit creinstall -q .' \
+      zsh-users/zsh-completions
+
+zinit load zdharma-continuum/history-search-multi-word
+
+# Options
+setopt AUTO_CD EXTENDED_GLOB NO_MATCH NOTIFY AUTO_PUSHD HIST_NO_STORE HIST_SAVE_NO_DUPS EXTENDED_HISTORY AUTO_LIST AUTO_MENU HIST_IGNORE_SPACE INTERACTIVE_COMMENTS
+unsetopt BEEP
+limit coredumpsize 0
+
+# Completions
+zstyle ':completion::complete:*' use-cache on
+zstyle ':completion::complete:*' cache-path .zcache
+zstyle ':completion:*:cd:*' ignore-parents parent pwd
+
+zstyle ':completion:*' verbose yes
+zstyle ':completion:*' menu select
+zstyle ':completion:*:*:default' force-list always
+zstyle ':completion:*' select-prompt '%SSelect:  lines: %L  matches: %M  [%p]'
+
+zstyle ':completion:*:match:*' original only
+zstyle ':completion::prefix-1:*' completer _complete
+zstyle ':completion:predict:*' completer _complete
+zstyle ':completion:incremental:*' completer _complete _correct
+zstyle ':completion:*' completer _complete _prefix _correct _prefix _match _approximate
+
+zstyle ':completion:*' expand 'yes'
+zstyle ':completion:*' squeeze-shlashes 'yes'
+zstyle ':completion::complete:*' '\\'
+
+zmodload zsh/complist
+if whence dircolors &>/dev/null; then 
+    eval $(dircolors -b)
+    zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+    alias ls='ls --color'
+else
+    export CLICOLOR=1
+    zstyle ':completion:*' list-colors ''
+fi
+zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
+ 
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' completer _complete _match _approximate
+zstyle ':completion:*:match:*' original only
+zstyle ':completion:*:approximate:*' max-errors 1 numeric
+ 
+zstyle ':completion:*:matches' group 'yes'
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*:options' description 'yes'
+zstyle ':completion:*:options' auto-description '%d'
+zstyle ':completion:*:descriptions' format $'\e[01;33m -- %d --\e[0m'
+zstyle ':completion:*:messages' format $'\e[01;35m -- %d --\e[0m'
+zstyle ':completion:*:warnings' format $'\e[01;31m -- No Matches Found --\e[0m'
+zstyle ':completion:*:corrections' format $'\e[01;32m -- %d (errors: %e) --\e[0m'
+
+# Keys
+bindkey -e
+bindkey "\e[1~" beginning-of-line
+bindkey "\e[4~" end-of-line
+bindkey "\e[5~" beginning-of-history # pgup
+bindkey "\e[6~" end-of-history # pgdn
+bindkey "\e[5~" beginning-of-line # home
+bindkey "\e[6~" end-of-line # end
+bindkey "\e[7~" beginning-of-line
+bindkey "\e[8~" end-of-line
+bindkey "\e[H" beginning-of-line # home
+bindkey "\e[F" end-of-line # end
+bindkey "\eOH" beginning-of-line
+bindkey "\eOF" end-of-line
+
+bindkey "\eOD" backward-char # left
+bindkey "\eOC" forward-char # right
+bindkey "\e[D" backward-char # left
+bindkey "\e[C" forward-char # right
+
+bindkey "\e[3~" delete-char
+bindkey "\e[2~" quoted-insert
+
+# History
+HISTFILE=~/.zsh_history
+SAVEHIST=1000000
+HISTSIZE=1000000
+HISTFILESIZE=1000000
+
+# Prompt
+autoload colors
+colors
+ 
+for color in RED GREEN YELLOW BLUE MAGENTA CYAN WHITE BLACK; do
+    eval _$color='%{$terminfo[bold]$fg[${(L)color}]%}'
+    eval $color='%{$fg[${(L)color}]%}'
+    (( count = $count + 1 ))
+done
+FINISH="%{$terminfo[sgr0]%}"
+
+GOOD='(*´∀`%)~'
+BAD='(#`Д´%)ﾉ'
+
+PROMPT="${WHITE}[${YELLOW}%n${WHITE}@${CYAN}%M ${GREEN}%~${WHITE}]"$'\n'"%(?.${GREEN}${GOOD}.${RED}${BAD})${WHITE}%(!.#.$)$FINISH "
+
+if [ -e /usr/bin/errno ]; then
+    errno() {
+        [ "$@" != "0" ] && /usr/bin/errno "$@"
+    }
+    precmd() { 
+        local e=$?
+        if [ $e -lt 134 ]; then
+            RPROMPT="%(?..${BLUE}$(errno $e) <= )$RED$(date +"%F %A %T")$FINISH"
+        else
+            RPROMPT="%(?..${BLUE}$e <= )$RED$(date +"%F %A %T")$FINISH"
+        fi
+    }
+else
+    precmd() { 
+        RPROMPT="%(?..${BLUE}$? <= )$RED$(date +"%F %A %T")$FINISH"
+    }
+fi
+
+# Highlighting
+ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets)
