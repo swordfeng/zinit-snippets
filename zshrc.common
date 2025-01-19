@@ -8,7 +8,8 @@ zinit wait lucid light-mode for \
   blockf atpull'zinit creinstall -q .' \
       zsh-users/zsh-completions
 
-zinit load zdharma-continuum/history-search-multi-word
+# Buggy, disabled
+#zinit load zdharma-continuum/history-search-multi-word
 
 # Options
 setopt AUTO_CD EXTENDED_GLOB NO_MATCH NOTIFY AUTO_PUSHD HIST_NO_STORE HIST_SAVE_NO_DUPS EXTENDED_HISTORY AUTO_LIST AUTO_MENU HIST_IGNORE_SPACE INTERACTIVE_COMMENTS
